@@ -2,34 +2,68 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ハイスループット実験シミュレーター</title>
+    <title>反応最適化シミュレーター (Buchwald-Hartwig)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>🔬 ハイスループット実験シミュレーター</h1>
+    <h1>🔬 反応最適化シミュレーター (Buchwald-Hartwig Amination)</h1>
     <p class="instructions">
-        9つの試験管に「試薬Aの量」と「温度」をそれぞれ設定し、最適な条件（当たり）を探そう！<br>
-        <strong>🎯 当たり条件: 試薬A: 50mg, 温度: 80℃</strong> (この条件に一番近いマスが大成功になります)
+        下の反応式を成功させるため、2つの条件（配位子, 塩基）を最適化しよう！<br>
+        論文(Newman, S.G. et al. Nat Protoc 16, 1152–1169 (2021).)の<br>
+        Supporting Figure 3を参考にしています。<br>
+        DOI: https://doi.org/10.1038/s41596-020-00452-7<br>
     </p>
 
     <div class="game-container">
         <div class="simulation-panel">
+            <div class="reaction-scheme">
+                <img src="images\RXN1.jpg" alt="Buchwald-Hartwig Amination Scheme">
+            </div>
             <div id="grid-container">
                 </div>
         </div>
 
         <div class="control-panel">
-            <h2>操作パネル</h2>
-            <p>各マスをクリックして条件を設定してください。</p>
-            <div id="selected-well-info">
-                <p>マスを選択していません</p>
+            <h2>⚙️ 操作パネル</h2>
+            <div id="well-selector">
+                <p>マスをクリックして条件を設定してください。</p>
             </div>
-            <button id="run-all-btn">▶ 一斉実行</button>
-            <button id="reset-btn">リセット</button>
-             <div id="log-area">
-                <p>ログ:</p>
-                <div id="log-output">待機中...</div>
+            
+            <div id="condition-form" class="hidden">
+                <h3 id="selected-well-label"></h3>
+                <div class="form-group">
+                    <label for="ligand">配位子 (Ligand):</label>
+                    <select id="ligand">
+                        <option value="L1">L1: RuPhos</option>
+                        <option value="L2">L2: Xantphos</option>
+                        <option value="L3">L3: DPEPhos</option>
+                        <option value="L4">L4: IPr</option>
+                        <option value="L5">L5: PCy3</option>
+                        <option value="L6">L6: dppf</option>
+                        <option value="L7">L7: BINAP</option>
+                        <option value="L8">L8: dcype</option>
+                        <option value="L9">L9: DavePhos</option>
+                        <option value="L10">L10: tBuXPhos</option>
+                        <option value="L11">L11: SPhos</option>
+                        <option value="L12">L12: P(o-tolyl)3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="base">塩基 (Base):</label>
+                    <select id="base">
+                        <option value="NaOtBu">NaOtBu</option>
+                        <option value="Cs2CO3">Cs2CO3</option>
+                        <option value="KHMDS">KHMDS</option>
+                        <option value="DBU">DBU</option>
+                    </select>
+                </div>
+                <button id="set-condition-btn">この条件をマスに設定</button>
+            </div>
+
+            <div class="main-controls">
+                <button id="run-all-btn">▶ 一斉実行</button>
+                <button id="reset-btn">リセット</button>
             </div>
         </div>
     </div>
