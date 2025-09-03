@@ -7,29 +7,75 @@
 </head>
 <body>
 
-    <h1>🔬 ハイスループット実験シミュレーター</h1>
+    <h1>🔬 ハイスループット実験による反応最適化シミュレーター</h1>
     <p class="instructions">
-        9つの試験管に「試薬Aの量」と「温度」をそれぞれ設定し、最適な条件（当たり）を探そう！<br>
-        <strong>🎯 当たり条件: 試薬A: 50mg, 温度: 80℃</strong> (この条件に一番近いマスが大成功になります)
+        下の反応式を成功させるため、5つの条件（ルイス酸, 添加剤, 溶媒, 温度, 時間）を最適化しよう！<br>
+        論文(J. Am. Chem. Soc. 2024, 146, 37, 25445–25450.)のTable S1を参考にしています。
     </p>
 
     <div class="game-container">
         <div class="simulation-panel">
+            <div class="reaction-scheme">
+                <img src="https://via.placeholder.com/400x150.png?text=ここに反応式の画像" alt="Reaction Scheme">
+            </div>
             <div id="grid-container">
                 </div>
         </div>
 
         <div class="control-panel">
-            <h2>操作パネル</h2>
-            <p>各マスをクリックして条件を設定してください。</p>
-            <div id="selected-well-info">
-                <p>マスを選択していません</p>
+            <h2>⚙️ 操作パネル</h2>
+            <div id="well-selector">
+                <p>マスをクリックして条件を設定してください。</p>
             </div>
-            <button id="run-all-btn">▶ 一斉実行</button>
-            <button id="reset-btn">リセット</button>
-             <div id="log-area">
-                <p>ログ:</p>
-                <div id="log-output">待機中...</div>
+            
+            <div id="condition-form" class="hidden">
+                <h3 id="selected-well-label"></h3>
+                <div class="form-group">
+                    <label for="lewis-acid">ルイス酸:</label>
+                    <select id="lewis-acid">
+                        <option value="None">None</option>
+                        <option value="B(C6F5)3">B(C6F5)3</option>
+                        <option value="InCl3">InCl3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="additive">添加剤:</label>
+                    <select id="additive">
+                        <option value="None">None</option>
+                        <option value="CSA">CSA</option>
+                        <option value="PTSA">PTSA</option>
+                        <option value="MsOH">MsOH</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="solvent">溶媒:</label>
+                    <select id="solvent">
+                        <option value="Toluene">Toluene</option>
+                        <option value="CCl4">CCl4</option>
+                        <option value="CHCl3">CHCl3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="temperature">温度 (°C):</label>
+                    <select id="temperature">
+                        <option value="80">80</option>
+                        <option value="100">100</option>
+                        <option value="120">120</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="time">時間 (h):</label>
+                    <select id="time">
+                        <option value="5">5</option>
+                        <option value="12">12</option>
+                    </select>
+                </div>
+                <button id="set-condition-btn">この条件をマスに設定</button>
+            </div>
+
+            <div class="main-controls">
+                <button id="run-all-btn">▶ 一斉実行</button>
+                <button id="reset-btn">リセット</button>
             </div>
         </div>
     </div>
