@@ -7,8 +7,7 @@ body {
     align-items: center;
     line-height: 1.6;
 }
-
-h1 { color: #005f73; }
+h1, h2 { color: #005f73; }
 .instructions { text-align: center; margin-bottom: 20px; background-color: #e0f7fa; padding: 10px; border-radius: 8px; max-width: 900px; }
 
 .game-container {
@@ -19,8 +18,7 @@ h1 { color: #005f73; }
     max-width: 1200px;
 }
 
-
-/* Simulation Panel */
+/* === Simulation Panel === */
 .simulation-panel {
     background-color: white;
     border-radius: 8px;
@@ -30,9 +28,6 @@ h1 { color: #005f73; }
     flex-direction: column;
     gap: 20px;
 }
-.reaction-scheme { text-align: center; }
-.reaction-scheme img { max-width: 100%; border: 1px solid #ccc; border-radius: 4px; background-color: #fff;}
-
 #grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -40,6 +35,7 @@ h1 { color: #005f73; }
     aspect-ratio: 1 / 1;
 }
 
+/* === Grid Item (Wells) === */
 .grid-item {
     border: 3px solid #a2d2ff;
     border-radius: 10px;
@@ -54,19 +50,8 @@ h1 { color: #005f73; }
 }
 .grid-item.selected { border-color: #0077b6; background-color: #e8f7ff; }
 .grid-item.set { border-color: #4ade80; }
-
 .well-label { font-weight: bold; font-size: 1.2em; color: #003049; }
 .well-status { font-size: 0.8em; color: #555; }
-
-.liquid {
-    position: absolute; bottom: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(189, 224, 254, 0.5);
-    border-radius: 6px;
-    transition: all 1s;
-    transform-origin: bottom;
-}
-
 .result-overlay {
     position: absolute; top: 0; left: 0;
     width: 100%; height: 100%;
@@ -74,23 +59,47 @@ h1 { color: #005f73; }
     display: none;
     justify-content: center;
     align-items: center;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
     text-align: center;
     border-radius: 6px;
     backdrop-filter: blur(2px);
+    padding: 5px;
 }
 
-/* Control Panel */
-.control-panel {
-    background-color: white;
+/* === Results Section === */
+.results-section { margin-top: 20px; }
+#results-grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    aspect-ratio: 1 / 1;
+    border: 2px solid #ccc;
+    padding: 10px;
     border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+.result-item {
+    background-color: #e9ecef;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #495057;
+    transition: background-color 0.5s;
+}
+
+/* Yield Category Colors */
+.yield-fail { background-color: #6c757d; } /* 失敗 */
+.yield-low { background-color: #f77f00; } /* 低収率 */
+.yield-medium { background-color: #fcbf49; } /* 中程度の収率 */
+.yield-high { background-color: #4caf50; } /* 高収率 */
+
+/* === Control Panel === */
+.control-panel { background-color: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .control-panel h2 { margin-top: 0; }
 .hidden { display: none; }
-
 #condition-form { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-top: 15px; }
 #condition-form h3 { margin-top: 0; color: #0077b6; }
 .form-group { margin-bottom: 10px; }
@@ -99,17 +108,11 @@ h1 { color: #005f73; }
 
 .main-controls { margin-top: 20px; }
 button {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    width: 100%; padding: 12px 15px; margin-bottom: 10px;
+    border: none; border-radius: 4px; cursor: pointer;
+    font-size: 16px; font-weight: bold; transition: background-color 0.2s;
 }
 #set-condition-btn { background-color: #0096c7; color: white; }
 #run-all-btn { background-color: #4caf50; color: white; }
-#run-all-btn:disabled { background-color: #aaa; cursor: not-allowed;}
 #reset-btn { background-color: #f44336; color: white; }
+button:disabled { background-color: #aaa; cursor: not-allowed; }
