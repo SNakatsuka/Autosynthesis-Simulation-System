@@ -2,59 +2,32 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>自動合成シミュレーター</title>
+    <title>ハイスループット実験シミュレーター</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>🔬 自動合成シミュレーター</h1>
+    <h1>🔬 ハイスループット実験シミュレーター</h1>
+    <p class="instructions">
+        9つの試験管に「試薬Aの量」と「温度」をそれぞれ設定し、最適な条件（当たり）を探そう！<br>
+        <strong>🎯 当たり条件: 試薬A: 50mg, 温度: 80℃</strong> (この条件に一番近いマスが大成功になります)
+    </p>
 
     <div class="game-container">
-        <div class="panel control-panel">
-            <h2>① 操作パネル</h2>
-            <div class="target">
-                <h3>🎯 目標化合物: アスピリン</h3>
-            </div>
-            <div class="form-group">
-                <label for="reagent-select">試薬:</label>
-                <select id="reagent-select">
-                    <option value="サリチル酸">サリチル酸</option>
-                    <option value="無水酢酸">無水酢酸</option>
-                    <option value="硫酸">硫酸(触媒)</option>
-                    <option value="水">水</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="action-select">操作:</label>
-                <select id="action-select">
-                    <option value="追加">追加</option>
-                    <option value="攪拌(10秒)">攪拌(10秒)</option>
-                    <option value="加熱(5秒)">加熱(5秒)</option>
-                    <option value="冷却(5秒)">冷却(5秒)</option>
-                </select>
-            </div>
-            <button id="add-step-btn">ステップ追加</button>
-        </div>
-
-        <div class="panel recipe-panel">
-            <h2>② 合成レシピ</h2>
-            <ul id="recipe-list">
-                </ul>
-            <div class="run-buttons">
-                <button id="run-btn">▶ 実行</button>
-                <button id="reset-btn">リセット</button>
-            </div>
-        </div>
-
-        <div class="panel simulation-panel">
-            <h2>③ シミュレーション</h2>
-            <div class="simulation-area">
-                <div id="robot-arm"></div>
-                <div id="beaker">
-                    <div id="liquid"></div>
+        <div class="simulation-panel">
+            <div id="grid-container">
                 </div>
+        </div>
+
+        <div class="control-panel">
+            <h2>操作パネル</h2>
+            <p>各マスをクリックして条件を設定してください。</p>
+            <div id="selected-well-info">
+                <p>マスを選択していません</p>
             </div>
-            <div id="log-area">
+            <button id="run-all-btn">▶ 一斉実行</button>
+            <button id="reset-btn">リセット</button>
+             <div id="log-area">
                 <p>ログ:</p>
                 <div id="log-output">待機中...</div>
             </div>
