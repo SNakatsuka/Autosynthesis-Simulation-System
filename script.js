@@ -10,20 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // フォームの入力要素
     const inputs = {
-        lewisAcid: document.getElementById('lewis-acid'),
-        additive: document.getElementById('additive'),
-        solvent: document.getElementById('solvent'),
-        temperature: document.getElementById('temperature'),
-        time: document.getElementById('time')
+        ligand: document.getElementById('ligand'),
+        base: document.getElementById('base')
     };
 
-    // 論文のEntry 17に基づく正解の条件
+    // 論文の最高収率に基づく正解の条件
     const CORRECT_ANSWER = {
-        lewisAcid: "B(C6F5)3",
-        additive: "CSA",
-        solvent: "Toluene",
-        temperature: "100",
-        time: "5"
+        ligand: "L2",
+        base: "Cs2CO3"
     };
 
     let wells = [];
@@ -80,11 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!selectedWell) return;
 
         selectedWell.params = {
-            lewisAcid: inputs.lewisAcid.value,
-            additive: inputs.additive.value,
-            solvent: inputs.solvent.value,
-            temperature: inputs.temperature.value,
-            time: inputs.time.value
+            ligand: inputs.ligand.value,
+            base: inputs.base.value,
         };
         selectedWell.isSet = true;
         
@@ -120,11 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function showResults() {
         wells.forEach(well => {
             let score = 0;
-            if (well.params.lewisAcid === CORRECT_ANSWER.lewisAcid) score++;
-            if (well.params.additive === CORRECT_ANSWER.additive) score++;
-            if (well.params.solvent === CORRECT_ANSWER.solvent) score++;
-            if (well.params.temperature === CORRECT_ANSWER.temperature) score++;
-            if (well.params.time === CORRECT_ANSWER.time) score++;
+            if (well.params.ligand === CORRECT_ANSWER.ligand) score++;
+            if (well.params.base === CORRECT_ANSWER.base) score++;
 
             const liquid = well.element.querySelector('.liquid');
             const overlay = well.element.querySelector('.result-overlay');
@@ -132,19 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let color = '';
 
             switch (score) {
-                case 5:
+                case 2:
                     resultText = '🎯<br>大成功!';
                     color = '#9ef01a'; // 鮮やかな緑
                     break;
-                case 4:
-                case 3:
+                case 1:
                     resultText = '成功';
                     color = '#4ade80'; // 緑
-                    break;
-                case 2:
-                case 1:
-                    resultText = 'まあまあ';
-                    color = '#facc15'; // 黄色
                     break;
                 default:
                     resultText = '失敗';
