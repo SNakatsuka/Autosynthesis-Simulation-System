@@ -2,32 +2,33 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>反応最適化シミュレーター (Buchwald-Hartwig)</title>
+    <title>反応最適化シミュレーター (収率表示版)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <h1>🔬 反応最適化シミュレーター (Buchwald-Hartwig Amination)</h1>
     <p class="instructions">
-        下の反応式を成功させるため、2つの条件（配位子, 塩基）を最適化しよう！<br>
-        論文(Newman, S.G. et al. Nat Protoc 16, 1152–1169 (2021).)の<br>
-        Supporting Figure 3を参考にしています。<br>
-        DOI: https://doi.org/10.1038/s41596-020-00452-7<br>
+        配位子と塩基の組み合わせを最適化し、最も高い収率を目指そう！<br>
+        論文(41596_2020_452_MOESM1_ESM.pdf)のSupporting Figure 3のデータを参照しています。
     </p>
 
     <div class="game-container">
         <div class="simulation-panel">
-            <div class="reaction-scheme">
-                <img src="images\RXN1.jpg" alt="Buchwald-Hartwig Amination Scheme">
-            </div>
+            <h2>🧪 シミュレーション</h2>
             <div id="grid-container">
                 </div>
+             <div class="results-section">
+                <h2>📈 結果の記録</h2>
+                <div id="results-grid-container">
+                    </div>
+            </div>
         </div>
 
         <div class="control-panel">
             <h2>⚙️ 操作パネル</h2>
             <div id="well-selector">
-                <p>マスをクリックして条件を設定してください。</p>
+                <p>上のシミュレーションマスをクリックして条件を設定してください。</p>
             </div>
             
             <div id="condition-form" class="hidden">
@@ -62,12 +63,11 @@
             </div>
 
             <div class="main-controls">
-                <button id="run-all-btn">▶ 一斉実行</button>
-                <button id="reset-btn">リセット</button>
+                <button id="run-all-btn">▶ 9マス一斉実行</button>
+                <button id="reset-btn" disabled>リセットしてやり直す</button>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
