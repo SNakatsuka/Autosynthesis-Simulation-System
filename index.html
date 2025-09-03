@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>反応最適化シミュレーター (Buchwald-Hartwig)</title>
+    <title>反応最適化シミュレーター (収率表示版)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,17 +17,20 @@
 
     <div class="game-container">
         <div class="simulation-panel">
-            <div class="reaction-scheme">
-                <img src="images\RXN1.jpg" alt="Buchwald-Hartwig Amination Scheme">
-            </div>
+            <h2>🧪 シミュレーション</h2>
             <div id="grid-container">
                 </div>
+             <div class="results-section">
+                <h2>📈 結果の記録</h2>
+                <div id="results-grid-container">
+                    </div>
+            </div>
         </div>
 
         <div class="control-panel">
             <h2>⚙️ 操作パネル</h2>
             <div id="well-selector">
-                <p>マスをクリックして条件を設定してください。</p>
+                <p>上のシミュレーションマスをクリックして条件を設定してください。</p>
             </div>
             
             <div id="condition-form" class="hidden">
@@ -62,12 +65,11 @@
             </div>
 
             <div class="main-controls">
-                <button id="run-all-btn">▶ 一斉実行</button>
-                <button id="reset-btn">リセット</button>
+                <button id="run-all-btn">▶ 9マス一斉実行</button>
+                <button id="reset-btn" disabled>リセットしてやり直す</button>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
