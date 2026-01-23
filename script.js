@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let runHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 
     let wells = [];
-    let resultCells = [];
     let selectedWell = null;
     let filledResultsCount = 0;
 
@@ -39,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gridContainer.innerHTML = '';
         resultsGridContainer.innerHTML = '';
         wells = [];
-        resultCells = [];
         const labels = ['A', 'B', 'C'];
         for (let i = 0; i < 9; i++) {
             const wellId = `${labels[Math.floor(i/3)]}${i%3 + 1}`;
@@ -47,18 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // シミュレーショングリッドの作成
             const wellElement = document.createElement('div');
             wellElement.className = 'grid-item';
-            wellElement.innerHTML = `<div class="well-label">${wellId}</div><div class="well-status">未設定</div><div class="result-overlay"></div>`;
+            wellElement.innerHTML = `
+                <div class="well-label">${wellId}</div>
+                <div class="well-status">未設定</div>
+                <div class="result-overlay"></div>
+            `;
             const wellData = { id: wellId, element: wellElement, params: {}, isSet: false };
             wellElement.addEventListener('click', () => selectWell(wellData));
             wells.push(wellData);
             gridContainer.appendChild(wellElement);
-            
-            // 結果記録グリッドの作成
-            const resultElement = document.createElement('div');
-            resultElement.className = 'result-item';
-            resultElement.textContent = '-';
-            resultCells.push(resultElement);
-            resultsGridContainer.appendChild(resultElement);
         }
     }
     
@@ -108,15 +103,51 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.style.backgroundColor = category.color;
             overlay.style.display = 'flex';
             
-            // 結果テーブルを更新
-            const resultCell = resultCells[index];
-            resultCell.textContent = `${yieldValue}%`;
-            resultCell.className = `result-item ${category.className}`;
         });
 
         filledResultsCount += wells.filter(w => w.isSet).length;
         if (filledResultsCount >= 9) {
             resetBtn.disabled = false;
+        }
+
+        function createHistoryCard(item, category) {
+            // item: { id, ligand, base, yield }
+            // category: getYieldCategory(item.yield) の戻り値 { text, color, className }
+        
+            const card = document.createElement('div');
+            card.className = `result-item ${category.className}`;
+        
+            const header = document.createElement('div');
+            header.className = 'header';
+            header.textContent = `${item.id}｜${item.ligand} × ${item.base}`;
+        
+            const state = document.createElement('div');
+            state.className = 'state';
+            state.textContent = category.text;
+        
+            const yieldDiv = document.createElement('div');
+            yieldDiv.className = 'yield';
+            yieldDiv.textContent = `${item.yield}%`;
+        
+            const actions = document.createElement('div');
+            actions.className = 'actions';
+            const btn = document.createElement('button');
+            btn.textContent = '条件を復元';
+            btn.addEventListener('click', () => {
+                if (inputs.ligand) inputs.ligand.value = item.ligand;
+                if (inputs.base) inputs.base.value = item.base;
+                conditionForm.classList.remove('hidden');
+                wellSelector.classList.add('hidden');
+                selectedWellLabel.textContent = '復元条件（クリックで任意マスに設定可）';
+            });
+            actions.appendChild(btn);
+        
+            card.appendChild(header);
+            card.appendChild(state);
+            card.appendChild(yieldDiv);
+            card.appendChild(actions);
+        
+            return card;
         }
 
         // === 履歴保存 ===
@@ -133,9 +164,27 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         };
         
+        // === 今回実行分を履歴化 & “結果の記録” グリッドへカード追加 ===
+        const thisRunItems = wells.map(well => {
+            const yieldValue = yieldData[well.params.ligand]?.[well.params.base] ?? 0;
+            return { id: well.id, ligand: well.params.ligand, base: well.params.base, yield: yieldValue };
+        });
+        
+        // 保存
+        const runRecord = { timestamp: Date.now(), results: thisRunItems };
         runHistory.push(runRecord);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(runHistory));
-        renderHistory();
+        
+        // 画面へ追加（今回の9枚を append）
+        const host = document.getElementById('results-grid-container');
+        thisRunItems.forEach(item => {
+            const category = getYieldCategory(item.yield);
+            const card = createHistoryCard(item, category);
+            host.appendChild(card);    // 直近を上にしたければ host.prepend(card);
+        });
+        
+        runHistory.push(runRecord);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(runHistory));
         
         // 3秒後にシミュレーショングリッドをリセット
         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -147,8 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // === リセット処理 ===
     resetBtn.addEventListener('click', () => {
         filledResultsCount = 0;
-        setupGrids();
-        renderHistory();
+        setupGrids();     // ← 履歴は残す。resultsGridContainer は触らない。
         resetBtn.disabled = true;
     });
 
@@ -158,25 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (yieldValue > 35) return { text: '中程度の収率', color: '#fcbf49', className: 'yield-medium' };
         if (yieldValue > 0) return { text: '低収率', color: '#f77f00', className: 'yield-low' };
         return { text: '失敗', color: '#6c757d', className: 'yield-fail' };
-    }
-
-    function renderHistory() {
-        const tbody = document.querySelector('#history-table tbody');
-        tbody.innerHTML = '';
-    
-        [...runHistory].reverse().forEach(run => {
-            run.results.forEach(r => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${new Date(run.timestamp).toLocaleString()}</td>
-                    <td>${r.id}</td>
-                    <td>${r.ligand}</td>
-                    <td>${r.base}</td>
-                    <td>${r.yield}%</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
     }
 
     function resetWell(well) {
@@ -189,4 +218,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 初期化 ===
     setupGrids();
+    
+    // === 保存済み履歴をカードで復元表示 ===
+    (function restoreHistoryCards() {
+        const host = document.getElementById('results-grid-container');
+        runHistory.forEach(run => {
+            run.results.forEach(item => {
+                const category = getYieldCategory(item.yield);
+                const card = createHistoryCard(item, category);
+                host.appendChild(card);
+            });
+        });
+    })();
+
 });
