@@ -160,11 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return { text: '失敗', color: '#6c757d', className: 'yield-fail' };
     }
 
+
     function createHistoryCard(item, category) {
-        // item: { id, ligand, base, yield }
-        // category: getYieldCategory(item.yield) の戻り値 { text, color, className }
-    
         const card = document.createElement('div');
+        // 色クラスをここで反映！
         card.className = `result-item ${category.className}`;
     
         const header = document.createElement('div');
@@ -179,23 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
         yieldDiv.className = 'yield';
         yieldDiv.textContent = `${item.yield}%`;
     
-        const actions = document.createElement('div');
-        actions.className = 'actions';
-        const btn = document.createElement('button');
-        btn.textContent = '条件を復元';
-        btn.addEventListener('click', () => {
-            if (inputs.ligand) inputs.ligand.value = item.ligand;
-            if (inputs.base) inputs.base.value = item.base;
-            conditionForm.classList.remove('hidden');
-            wellSelector.classList.add('hidden');
-            selectedWellLabel.textContent = '復元条件（クリックで任意マスに設定可）';
-        });
-        actions.appendChild(btn);
-    
         card.appendChild(header);
         card.appendChild(state);
         card.appendChild(yieldDiv);
-        card.appendChild(actions);
     
         return card;
     }
