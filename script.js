@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
         "L12": { "NaOtBu": 4,  "Cs2CO3": 6,  "KHMDS": 0,  "DBU": 0 }
     };
 
+    const STORAGE_KEY = 'autosyn_history_v1';
+    let runHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
     let wells = [];
     let resultCells = [];
     let selectedWell = null;
@@ -115,6 +118,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filledResultsCount >= 9) {
             resetBtn.disabled = false;
         }
+
+        // === 履歴保存 ===
+        const runRecord = {
+            timestamp: Date.now(),
+            results: wells.map((well, idx) => {
+                const yieldValue = yieldData[well.params.ligand]?.[well.params.base] ?? 0;
+                return {
+                    id: well.id,
+                    ligand: well.params.ligand,
+                    base: well.params.base,
+                    yield: yieldValue
+                };
+            })
+        };
+        
+        runHistory.push(runRecord);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(runHistory));
+        renderHistory();
         
         // 3秒後にシミュレーショングリッドをリセット
         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -127,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resetBtn.addEventListener('click', () => {
         filledResultsCount = 0;
         setupGrids();
+        renderHistory();
         resetBtn.disabled = true;
     });
 
@@ -136,6 +158,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (yieldValue > 35) return { text: '中程度の収率', color: '#fcbf49', className: 'yield-medium' };
         if (yieldValue > 0) return { text: '低収率', color: '#f77f00', className: 'yield-low' };
         return { text: '失敗', color: '#6c757d', className: 'yield-fail' };
+    }
+
+    function renderHistory() {
+        const tbody = document.querySelector('#history-table tbody');
+        tbody.innerHTML = '';
+    
+        [...runHistory].reverse().forEach(run => {
+            run.results.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(run.timestamp).toLocaleString()}</td>
+                    <td>${r.id}</td>
+                    <td>${r.ligand}</td>
+                    <td>${r.base}</td>
+                    <td>${r.yield}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
     }
 
     function resetWell(well) {
