@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // === グリッドのセットアップ ===
     function setupGrids() {
         gridContainer.innerHTML = '';
-        resultsGridContainer.innerHTML = '';
         wells = [];
         const labels = ['A', 'B', 'C'];
         for (let i = 0; i < 9; i++) {
@@ -110,46 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
             resetBtn.disabled = false;
         }
 
-        function createHistoryCard(item, category) {
-            // item: { id, ligand, base, yield }
-            // category: getYieldCategory(item.yield) の戻り値 { text, color, className }
+        // === 今回実行分を履歴化 & “結果の記録” グリッドへカード追加 ===
+        const thisRunItems = wells.map(well => {
+            const yieldValue = yieldData[well.params.ligand]?.[well.params.base] ?? 0;
+            return { id: well.id, ligand: well.params.ligand, base: well.params.base, yield: yieldValue };
+        });
         
-            const card = document.createElement('div');
-            card.className = `result-item ${category.className}`;
-        
-            const header = document.createElement('div');
-            header.className = 'header';
-            header.textContent = `${item.id}｜${item.ligand} × ${item.base}`;
-        
-            const state = document.createElement('div');
-            state.className = 'state';
-            state.textContent = category.text;
-        
-            const yieldDiv = document.createElement('div');
-            yieldDiv.className = 'yield';
-            yieldDiv.textContent = `${item.yield}%`;
-        
-            const actions = document.createElement('div');
-            actions.className = 'actions';
-            const btn = document.createElement('button');
-            btn.textContent = '条件を復元';
-            btn.addEventListener('click', () => {
-                if (inputs.ligand) inputs.ligand.value = item.ligand;
-                if (inputs.base) inputs.base.value = item.base;
-                conditionForm.classList.remove('hidden');
-                wellSelector.classList.add('hidden');
-                selectedWellLabel.textContent = '復元条件（クリックで任意マスに設定可）';
-            });
-            actions.appendChild(btn);
-        
-            card.appendChild(header);
-            card.appendChild(state);
-            card.appendChild(yieldDiv);
-            card.appendChild(actions);
-        
-            return card;
-        }
-
         // === 履歴保存 ===
         const runRecord = {
             timestamp: Date.now(),
@@ -164,16 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         };
         
-        // === 今回実行分を履歴化 & “結果の記録” グリッドへカード追加 ===
-        const thisRunItems = wells.map(well => {
-            const yieldValue = yieldData[well.params.ligand]?.[well.params.base] ?? 0;
-            return { id: well.id, ligand: well.params.ligand, base: well.params.base, yield: yieldValue };
-        });
-        
-        // 保存
-        const runRecord = { timestamp: Date.now(), results: thisRunItems };
-        runHistory.push(runRecord);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(runHistory));
         
         // 画面へ追加（今回の9枚を append）
         const host = document.getElementById('results-grid-container');
@@ -182,10 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = createHistoryCard(item, category);
             host.appendChild(card);    // 直近を上にしたければ host.prepend(card);
         });
-        
-        runHistory.push(runRecord);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(runHistory));
-        
+                
         // 3秒後にシミュレーショングリッドをリセット
         await new Promise(resolve => setTimeout(resolve, 3000));
         
@@ -206,6 +158,46 @@ document.addEventListener('DOMContentLoaded', () => {
         if (yieldValue > 35) return { text: '中程度の収率', color: '#fcbf49', className: 'yield-medium' };
         if (yieldValue > 0) return { text: '低収率', color: '#f77f00', className: 'yield-low' };
         return { text: '失敗', color: '#6c757d', className: 'yield-fail' };
+    }
+
+    function createHistoryCard(item, category) {
+        // item: { id, ligand, base, yield }
+        // category: getYieldCategory(item.yield) の戻り値 { text, color, className }
+    
+        const card = document.createElement('div');
+        card.className = `result-item ${category.className}`;
+    
+        const header = document.createElement('div');
+        header.className = 'header';
+        header.textContent = `${item.id}｜${item.ligand} × ${item.base}`;
+    
+        const state = document.createElement('div');
+        state.className = 'state';
+        state.textContent = category.text;
+    
+        const yieldDiv = document.createElement('div');
+        yieldDiv.className = 'yield';
+        yieldDiv.textContent = `${item.yield}%`;
+    
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const btn = document.createElement('button');
+        btn.textContent = '条件を復元';
+        btn.addEventListener('click', () => {
+            if (inputs.ligand) inputs.ligand.value = item.ligand;
+            if (inputs.base) inputs.base.value = item.base;
+            conditionForm.classList.remove('hidden');
+            wellSelector.classList.add('hidden');
+            selectedWellLabel.textContent = '復元条件（クリックで任意マスに設定可）';
+        });
+        actions.appendChild(btn);
+    
+        card.appendChild(header);
+        card.appendChild(state);
+        card.appendChild(yieldDiv);
+        card.appendChild(actions);
+    
+        return card;
     }
 
     function resetWell(well) {
