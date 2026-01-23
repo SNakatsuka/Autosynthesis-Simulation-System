@@ -90,6 +90,67 @@ h1, h2 { color: #005f73; }
     transition: background-color 0.5s;
 }
 
+/* 履歴カードのベース */
+.result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #1f2430;
+  color: #fff;
+  border: 1px solid #3a3f4b;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  min-height: 92px;
+}
+
+/* ヘッダー行（A1｜L2 × Cs2CO3） */
+.result-item .header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: .2px;
+  opacity: .95;
+}
+
+/* 状態（高収率/中/低/失敗） */
+.result-item .state {
+  font-size: 0.85rem;
+  opacity: .9;
+}
+
+/* 収率の数字をドンと */
+.result-item .yield {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+/* 復元ボタン */
+.result-item .actions button {
+  margin-top: 6px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  background: #2f80ed;
+  color: #fff;
+}
+.result-item .actions button:hover {
+  background: #1c61bb;
+}
+
+/* 収率カテゴリ色（背景の淡色グラデ） */
+.result-item.yield-high    { background: linear-gradient(135deg, #1f2430, #214a2c); border-color:#2d6a4f; }
+.result-item.yield-medium  { background: linear-gradient(135deg, #1f2430, #4a3f21); border-color:#b08900; }
+.result-item.yield-low     { background: linear-gradient(135deg, #1f2430, #4a2e21); border-color:#bb5a00; }
+.result-item.yield-fail    { background: linear-gradient(135deg, #1f2430, #30343b); border-color:#6c757d; }
+
+/* グリッドが横に詰まりすぎる場合に段組を広げたいとき（任意） */
+/* #results-grid-container { grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); } */
+
 /* Yield Category Colors */
 .yield-fail { background-color: #6c757d; } /* 失敗 */
 .yield-low { background-color: #f77f00; } /* 低収率 */
