@@ -2,12 +2,12 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>反応最適化シミュレーター (Buchwald-Hartwig)</title>
+    <title>反応最適化シミュレーター (収率表示版)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>🔬 反応最適化シミュレーター (Buchwald-Hartwig Amination)</h1>
+    <h1>🔬 反応最適化シミュレーター (Buchwald-Hartwig Amination)20260123UPDATE</h1>
     <p class="instructions">
         下の反応式を成功させるため、2つの条件（配位子, 塩基）を最適化しよう！<br>
         論文(Newman, S.G. et al. Nat Protoc 16, 1152–1169 (2021).)の<br>
@@ -17,17 +17,23 @@
 
     <div class="game-container">
         <div class="simulation-panel">
+            <h2>🧪 シミュレーション</h2>
             <div class="reaction-scheme">
-                <img src="images\RXN1.jpg" alt="Buchwald-Hartwig Amination Scheme">
+                <img src="images/RXN1.jpg" alt="Buchwald-Hartwig Amination Scheme">
             </div>
             <div id="grid-container">
                 </div>
+             <div class="results-section">
+                <h2>📈 結果の記録</h2>
+                <div id="results-grid-container">
+                    </div>
+            </div>
         </div>
 
         <div class="control-panel">
             <h2>⚙️ 操作パネル</h2>
             <div id="well-selector">
-                <p>マスをクリックして条件を設定してください。</p>
+                <p>上のシミュレーションマスをクリックして条件を設定してください。</p>
             </div>
             
             <div id="condition-form" class="hidden">
@@ -62,11 +68,27 @@
             </div>
 
             <div class="main-controls">
-                <button id="run-all-btn">▶ 一斉実行</button>
-                <button id="reset-btn">リセット</button>
+                <button id="run-all-btn">▶ 9マス一斉実行</button>
+                <button id="reset-btn" disabled>リセットしてやり直す</button>
             </div>
         </div>
     </div>
+    
+    <section id="history-container">
+        <h2>📝 実行履歴</h2>
+        <table id="history-table">
+            <thead>
+                <tr>
+                    <th>日時</th>
+                    <th>マス</th>
+                    <th>配位子</th>
+                    <th>塩基</th>
+                    <th>収率</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
 
     <script src="script.js"></script>
 </body>
