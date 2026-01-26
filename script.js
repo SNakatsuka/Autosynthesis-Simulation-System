@@ -1,110 +1,192 @@
-// DOM要素の取得
-const reagentSelect = document.getElementById('reagent-select');
-const actionSelect = document.getElementById('action-select');
-const addStepBtn = document.getElementById('add-step-btn');
-const recipeList = document.getElementById('recipe-list');
-const runBtn = document.getElementById('run-btn');
-const resetBtn = document.getElementById('reset-btn');
-const logOutput = document.getElementById('log-output');
-const robotArm = document.getElementById('robot-arm');
-const liquid = document.getElementById('liquid');
+document.addEventListener('DOMContentLoaded', () => {
 
-// レシピを保存する配列
-let recipe = [];
+    // === DOM取得 ===
+    const gridContainer = document.getElementById('grid-container');
+    const resultsGridContainer = document.getElementById('results-grid-container');
+    const runAllBtn = document.getElementById('run-all-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const wellSelector = document.getElementById('well-selector');
+    const conditionForm = document.getElementById('condition-form');
+    const setConditionBtn = document.getElementById('set-condition-btn');
+    const selectedWellLabel = document.getElementById('selected-well-label');
+    const inputs = { ligand: document.getElementById('ligand'), base: document.getElementById('base') };
 
-// 正解のレシピ（雰囲気です）
-const correctRecipe = [
-    "サリチル酸を追加",
-    "無水酢酸を追加",
-    "加熱(5秒)",
-    "冷却(5秒)"
-];
+    const STORAGE_KEY = 'autosyn_history_v2';
+    let runHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let wells = [];
+    let selectedWell = null;
+    let filledResultsCount = 0;
 
-// 便利な関数：指定時間待つ
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+    // === ORDデータとreaction管理 ===
+    let yieldData = {}; // reaction_id -> ligand -> base -> yield
 
-// ログを更新する関数
-function updateLog(message) {
-    logOutput.innerHTML += `${message}<br>`;
-    logOutput.scrollTop = logOutput.scrollHeight; // 自動スクロール
-}
-
-// レシピリストの表示を更新する関数
-function updateRecipeList() {
-    recipeList.innerHTML = '';
-    recipe.forEach(step => {
-        const li = document.createElement('li');
-        li.textContent = step;
-        recipeList.appendChild(li);
-    });
-}
-
-// ステップ追加ボタンの処理
-addStepBtn.addEventListener('click', () => {
-    const reagent = reagentSelect.value;
-    const action = actionSelect.value;
-    
-    // 操作が「追加」の時だけ試薬名も入れる
-    const stepText = action === '追加' ? `${reagent}を${action}` : action;
-    
-    recipe.push(stepText);
-    updateRecipeList();
-});
-
-// リセットボタンの処理
-resetBtn.addEventListener('click', () => {
-    recipe = [];
-    updateRecipeList();
-    updateLog('リセットしました。');
-    liquid.style.height = '10%';
-    liquid.style.backgroundColor = '#bde0fe';
-    runBtn.disabled = false;
-});
-
-// 実行ボタンの処理
-runBtn.addEventListener('click', async () => {
-    runBtn.disabled = true; // 連続クリック防止
-    logOutput.innerHTML = '';
-    updateLog('>>> シミュレーション開始...');
-
-    // 各ステップを順番に実行
-    for (const step of recipe) {
-        updateLog(`実行中: ${step}`);
-
-        // 簡単なアニメーション
-        robotArm.style.transform = 'translateX(150px) rotate(30deg)';
-        await sleep(1000);
-        
-        if (step.includes('追加')) {
-            const currentHeight = parseInt(liquid.style.height) || 10;
-            liquid.style.height = `${currentHeight + 15}%`;
-        } else if (step.includes('加熱')) {
-            liquid.style.backgroundColor = '#ff6b6b'; // 赤色に
-            await sleep(5000);
-            liquid.style.backgroundColor = '#bde0fe'; // 元の色に
-        } else if (step.includes('攪拌')) {
-            // ここに攪拌アニメーションを追加できる
-            await sleep(10000);
-        } else if (step.includes('冷却')) {
-            liquid.style.backgroundColor = '#48cae4'; // 青色に
-            await sleep(5000);
-            liquid.style.backgroundColor = '#bde0fe'; // 元の色に
+    const REACTIONS = {
+        "buchwald_hartwig_amination_v1": {
+            name: "Buchwald–Hartwig Amination",
+            schemeImage: "images/RXN1.jpg"
         }
+        // 将来複数反応追加可能
+    };
 
-        robotArm.style.transform = 'translateX(0) rotate(0)';
-        await sleep(500);
+    let CURRENT_REACTION_ID = "buchwald_hartwig_amination_v1";
+
+    async function loadORDYieldData() {
+        const res = await fetch('./ord_yields.json');
+        const records = await res.json();
+        const map = {};
+        records.forEach(r => {
+            if (!map[r.reaction_id]) map[r.reaction_id] = {};
+            if (!map[r.reaction_id][r.ligand]) map[r.reaction_id][r.ligand] = {};
+            map[r.reaction_id][r.ligand][r.base] = r.yield;
+        });
+        yieldData = map;
     }
-    
-    // 結果判定
-    const isSuccess = JSON.stringify(recipe) === JSON.stringify(correctRecipe);
-    if (isSuccess) {
-        updateLog('🎉 合成成功！ アスピリンができました！');
-        liquid.style.backgroundColor = '#9ef01a'; // 成功の色
-    } else {
-        updateLog('💥 合成失敗... レシピが違うようです。');
-        liquid.style.backgroundColor = '#7209b7'; // 失敗の色
+
+    function getYield(ligand, base) {
+        return yieldData[CURRENT_REACTION_ID]?.[ligand]?.[base] ?? 0;
     }
-    
-    updateLog('>>> シミュレーション終了');
-    runBtn.disabled = false;
+
+    // === グリッドセットアップ ===
+    function setupGrids() {
+        gridContainer.innerHTML = '';
+        wells = [];
+        const labels = ['A','B','C'];
+        for(let i=0;i<9;i++){
+            const wellId = `${labels[Math.floor(i/3)]}${i%3+1}`;
+            const wellElement = document.createElement('div');
+            wellElement.className = 'grid-item';
+            wellElement.innerHTML = `
+                <div class="well-label">${wellId}</div>
+                <div class="well-status">未設定</div>
+                <div class="result-overlay"></div>
+            `;
+            const wellData = {id:wellId, element:wellElement, params:{}, isSet:false};
+            wellElement.addEventListener('click',()=>selectWell(wellData));
+            wells.push(wellData);
+            gridContainer.appendChild(wellElement);
+        }
+        // 画像切替
+        document.querySelector('.reaction-scheme img').src = REACTIONS[CURRENT_REACTION_ID].schemeImage;
+    }
+
+    function selectWell(wellData){
+        if(wellData.isSet){
+            alert(`マス ${wellData.id} は既に設定済みです。`);
+            return;
+        }
+        wells.forEach(w=>w.element.classList.remove('selected'));
+        wellData.element.classList.add('selected');
+        selectedWell = wellData;
+        Object.keys(inputs).forEach(key=>{inputs[key].value = inputs[key].options[0].value;});
+        wellSelector.classList.add('hidden');
+        conditionForm.classList.remove('hidden');
+        selectedWellLabel.textContent = `マス ${wellData.id} の条件設定`;
+    }
+
+    setConditionBtn.addEventListener('click',()=>{
+        if(!selectedWell) return;
+        selectedWell.params = {ligand: inputs.ligand.value, base: inputs.base.value};
+        selectedWell.isSet = true;
+        selectedWell.element.querySelector('.well-status').textContent = '設定済';
+        selectedWell.element.classList.add('set');
+        selectedWell.element.classList.remove('selected');
+        conditionForm.classList.add('hidden');
+        wellSelector.classList.remove('hidden');
+        selectedWell = null;
+    });
+
+    runAllBtn.addEventListener('click', async()=>{
+        const unsetWells = wells.filter(w=>!w.isSet);
+        if(unsetWells.length>0){alert('すべてのマスに条件を設定してください。');return;}
+        runAllBtn.disabled = true;
+
+        wells.forEach((well,index)=>{
+            const yieldValue = getYield(well.params.ligand, well.params.base);
+            const category = getYieldCategory(yieldValue);
+            const overlay = well.element.querySelector('.result-overlay');
+            overlay.innerHTML = `${category.text}<br>${yieldValue}%`;
+            overlay.style.backgroundColor = category.color;
+            overlay.style.display = 'flex';
+        });
+
+        filledResultsCount += wells.filter(w=>w.isSet).length;
+
+        const thisRunItems = wells.map(well=>{
+            const yieldValue = getYield(well.params.ligand, well.params.base);
+            return {id:well.id, ligand:well.params.ligand, base:well.params.base, yield:yieldValue};
+        });
+
+        const runRecord = {
+            timestamp: Date.now(),
+            results: thisRunItems
+        };
+        runHistory.push(runRecord);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(runHistory));
+
+        // 結果カード
+        thisRunItems.forEach(item=>{
+            const category = getYieldCategory(item.yield);
+            const card = createHistoryCard(item, category);
+            resultsGridContainer.appendChild(card);
+        });
+
+        await new Promise(resolve=>setTimeout(resolve,3000));
+        wells.forEach(well=>resetWell(well));
+        runAllBtn.disabled = false;
+    });
+
+    resetBtn.addEventListener('click',()=>{
+        filledResultsCount = 0;
+        setupGrids();
+        resetBtn.disabled = true;
+    });
+
+    function getYieldCategory(y){
+        if(y>70) return {text:'高収率',color:'#4caf50',className:'yield-high'};
+        if(y>35) return {text:'中程度の収率',color:'#fcbf49',className:'yield-medium'};
+        if(y>0) return {text:'低収率',color:'#f77f00',className:'yield-low'};
+        return {text:'失敗',color:'#6c757d',className:'yield-fail'};
+    }
+
+    function createHistoryCard(item, category){
+        const card = document.createElement('div');
+        card.className = `result-item ${category.className}`;
+        const header = document.createElement('div');
+        header.className='header';
+        header.textContent=`${item.id}｜${item.ligand} × ${item.base}`;
+        const state = document.createElement('div');
+        state.className='state';
+        state.textContent=category.text;
+        const yieldDiv=document.createElement('div');
+        yieldDiv.className='yield';
+        yieldDiv.textContent=`${item.yield}%`;
+        card.appendChild(header);
+        card.appendChild(state);
+        card.appendChild(yieldDiv);
+        return card;
+    }
+
+    function resetWell(well){
+        well.isSet=false;
+        well.params={};
+        well.element.classList.remove('set');
+        well.element.querySelector('.well-status').textContent='未設定';
+        well.element.querySelector('.result-overlay').style.display='none';
+    }
+
+    // === 初期化 ===
+    (async function init(){
+        await loadORDYieldData();
+        setupGrids();
+
+        // 保存済み履歴復元
+        runHistory.forEach(run=>{
+            run.results.forEach(item=>{
+                const category = getYieldCategory(item.yield);
+                const card = createHistoryCard(item, category);
+                resultsGridContainer.appendChild(card);
+            });
+        });
+    })();
+
 });
